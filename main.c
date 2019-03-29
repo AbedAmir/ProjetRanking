@@ -22,7 +22,7 @@ int main()
     FILE* fichier=NULL;
     double somme=0.0,proba, alpha = 1, *vecteur_n1, *vecteur_n2;
     char chaine[tailleMax] = "";
-    fichier = fopen("web1.txt","r");
+    fichier = fopen("Stanford.txt","r");
 
     fgets(chaine, tailleMax, fichier); // recup taille
     size = 1 + (int)atof(chaine);
@@ -97,12 +97,12 @@ int main()
         printf("Impossible d'ouvrir le fichier");
     }
     fclose(fichier);
-    for(i = 0 ; i<nblienTotal;i++)
+    /*for(i = 0 ; i<nblienTotal;i++)
     {
         printf("Matrice[0][%d] = %lf || Matrice[1][%d] = %d || Matrice[2][%d] = %d\n",i,matrice_H[0][i],i,(int)matrice_H[1][i],i,(int)matrice_H[2][i]);
         //printf("Matrice[0][%d] = %lf || Matrice[1][%d] = %d \n",i,matrice_H[0][i],i,(int)matrice_H[1][i]);
 
-    }
+    }*/
     for(i=0 ; i<size_moins ; i++)
     {
         //printf("Liste[%d] = %d\n", i,listeLigne[i]);
@@ -118,34 +118,25 @@ int main()
     }
     printf("\n");
     somme = 0.0;
-    int verif = 0, iteration=0, t,tt,col=0;
+    int verif = 0, iteration=0, t,tt,col=0,ligne;
     double sommevec=0.0;
-    while(verif != 4)
+    while(verif == 0)
     {
-        for (i=0; i<size_moins;i++)
-        {
-            for(j=0;j<nblienTotal;j++)
+        for(j=0;j<nblienTotal;j++)
             {
-                if(matrice_H[1][j] == i+1)
-                {
-                    col = (int)matrice_H[2][j]-1;
-                    vecteur_n2[col] = vecteur_n2[col] + (matrice_H[0][j] * vecteur_n1[i]);
-                }
+                ligne = (int)matrice_H[1][j]-1;
+                col = (int)matrice_H[2][j]-1;
+                vecteur_n2[col] = vecteur_n2[col] + (matrice_H[0][j] * vecteur_n1[ligne]);
             }
-        }
-        for(i=0;i<size_moins;i++)
+        /*for(i=0;i<size_moins;i++)
         {
             printf("vecteur_2[%d] = %lf \n",i,vecteur_n2[i]);
             vecteur_n1[i] = vecteur_n2[i];
             vecteur_n2[i] = 0;
-        }
-        if(verif == 0)
-        {
-        printf("ITERATION 2\n");
-        }
-        printf("\n");
-        verif++;
-    /*for(i=0; i<size_moins ; i++)
+        }*/
+        //printf("\n");
+        //verif++;
+    for(i=0; i<size_moins ; i++)
     {
         somme = vecteur_n2[i] - vecteur_n1[i];
         if(somme<0)
@@ -157,8 +148,8 @@ int main()
         //printf("difference vecteur = %lf \n", sommevec);
     }
     //printf("SOMME VEC = %lf\n",sommevec);
-
-    if(sommevec<pow(10,-1))
+    //printf("Somme vec = %lf \n",sommevec);
+    if(sommevec<pow(10,-2))
     {
         verif = 1;
     }
@@ -166,14 +157,15 @@ int main()
     {
         for(i=0; i<size_moins; i++)
         {
-            vecteur_n1[i]= vecteur_n2[i];
+            vecteur_n1[i] = vecteur_n2[i];
+            vecteur_n2[i] = 0;
             //printf("Iteration %d : vecteur1_modif[%d] = %lf \n",iteration, i, vecteur_n1[i]);
         }
 
     }
     sommevec = 0.0;
     iteration++;
-    somme = 0.0;*/
+    somme = 0.0;
     }
     /*for(i=0; i<size_moins; i++)
     {
@@ -183,5 +175,6 @@ int main()
     {
         printf("vecteur_2[%d]=%lf \n",i,vecteur_n2[i]);
     }*/
+    printf("Nb iteration = %d", iteration);
     return 0;
 }
