@@ -180,22 +180,7 @@ int main()
     printf("\n");
     // DEBUT PROJET
 
-    algoAddSommetSeulement();
 
-    return 0;
-}
-
-int randNumber(int min, int max)
-{
-    int distance ,anyRandom,x;
-    distance = max - min  +1;
-    anyRandom = rand();
-    x = anyRandom % distance;
-    return(x+min);
-}
-
-void algoAddSommetSeulement()
-{
     nblienTotalApresModif = nblienTotal + 50;
     //Allocation nouvelle stucture augmenté avec 50 lien en plus
     matrice_H_Modif = malloc(nblienTotalApresModif * sizeof(double*));
@@ -268,4 +253,14 @@ void algoAddSommetSeulement()
         cpt=0;
         //printf("matricemodfi[%d] = %lf \n",i, matrice_H_Modif[0][i]);
     }
+    return 0;
+}
+
+int randNumber(int min, int max)
+{
+    int distance ,anyRandom,x;
+    distance = max - min  +1;
+    anyRandom = rand();
+    x = anyRandom % distance;
+    return(x+min);
 }
