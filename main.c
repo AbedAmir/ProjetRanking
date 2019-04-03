@@ -10,7 +10,7 @@ double **matrice_H = NULL, **matrice_H_Modif = NULL;
 int verif = 0, iteration=0, t,tt;
 double sommevec=0.0;
 FILE* fichier=NULL;
-char sentence[1000000] ;
+char sentence[10000] ;
 char *secondword, *word;
 int col=0,ligne=0;
 int main()
@@ -24,17 +24,18 @@ int main()
     size_moins = size - 1;
     fgets(chaine, tailleMax, fichier); // recup nblien
     nblienTotal = (int)atof(chaine);
-    printf("Nb noeud = %d \nnblien = %d \n",size_moins, nblienTotal);
+    //printf("Nb noeud = %d \nnblien = %d \n",size_moins, nblienTotal);
     lectureMatrice();
     initDebutVecteurN1N2();
     verifConvergence();
     // DEBUT PROJET
 
-    algoAddSommetSeulement(5,50);
-    printf("size aprés modif = %d", nblienTotalApresModif);
-    //free(matrice_H);
-    //iteration = 0;
-    verifConvergenceApresModif();
+    algoAddSommetSeulement(5,5);
+    //printf("size aprés modif = %d", nblienTotalApresModif);
+    free(matrice_H);
+    verifConvergenceApresModif(); // l'algo boucle a l'infini je ne sais pas pourquoi, pourtant la nouvelle matrice est stoquastique et on normalise le vecteur a chaque fois
+
+
     return 0;
 }
 
@@ -49,6 +50,7 @@ int randNumber(int min, int max)
 
 void algoAddSommetSeulement(int nombreSommetAjoute, int nombreLiensAjoute)
 {
+    //On ajoute des liens seulement pour les nouveau sommets et les liens peuvent etre sur tout les sommets du graphe
     S = nombreSommetAjoute;
     nblienTotalApresModif = nblienTotal + nombreLiensAjoute;
     //Allocation nouvelle stucture augmenté avec 50 lien en plus
@@ -86,7 +88,7 @@ void algoAddSommetSeulement(int nombreSommetAjoute, int nombreLiensAjoute)
     {
         //initialisation du nouveau vecteur
         //ici modif aprés
-        vecteur_n1_modif[j] = 0.5;
+        vecteur_n1_modif[j] = 0.0;
         vecteur_n2_modif[j] = 0.0;
     }
     // Modification stucture de donnée et donc MODIFICATION DU GRAPHE DU WEB
@@ -99,6 +101,34 @@ void algoAddSommetSeulement(int nombreSommetAjoute, int nombreLiensAjoute)
 
         col = randNumber(1, sizeApresModif);
         //printf("Ligne = %d \n",ligne);
+        /*for(j=0; j<nblienTotalApresModif; j++)
+        {
+            if(matrice_H_Modif[1][j] == ligne)
+            {
+                //printf("Test %lf \n",matrice_H_Modif[1][j]);
+                cpt++;
+                //printf("cpt = %d \n",cpt);
+            }
+        }
+        if(cpt == 0) //Pour eviter le problm de IND0.0
+        {
+            proba = 0.0;
+        }
+        else
+        {
+            proba = (double)1/cpt;
+        }
+        */
+        //printf("proba = %lf \n",proba);
+        //matrice_H_Modif[0][i] = proba;
+        matrice_H_Modif[1][i] = ligne;
+        matrice_H_Modif[2][i] = col;
+        //printf("Ligne = %d || cpt= %lf\n",ligne, cpt);
+        //cpt=0;
+        //printf("matricemodfi[%d] = %lf \n",i, matrice_H_Modif[0][i]);
+    }
+    for(i=nblienTotal; i<nblienTotalApresModif; i++)
+    {
         for(j=0; j<nblienTotalApresModif; j++)
         {
             if(matrice_H_Modif[1][j] == ligne)
@@ -108,7 +138,7 @@ void algoAddSommetSeulement(int nombreSommetAjoute, int nombreLiensAjoute)
                 //printf("cpt = %d \n",cpt);
             }
         }
-        if(cpt == 0)
+        if(cpt == 0) //Pour eviter le problm de IND0.0
         {
             proba = 0.0;
         }
@@ -116,14 +146,8 @@ void algoAddSommetSeulement(int nombreSommetAjoute, int nombreLiensAjoute)
         {
             proba = (double)1/cpt;
         }
-
-        //printf("proba = %lf \n",proba);
         matrice_H_Modif[0][i] = proba;
-        matrice_H_Modif[1][i] = ligne;
-        matrice_H_Modif[2][i] = col;
-        //printf("Ligne = %d || cpt= %lf\n",ligne, cpt);
-        cpt=0;
-        //printf("matricemodfi[%d] = %lf \n",i, matrice_H_Modif[0][i]);
+        cpt = 0;
     }
 }
 
@@ -281,50 +305,63 @@ void verifConvergenceApresModif()
     iteration = 0;
     printf("\n");
     somme = 0.0;
-
+    sommevec=0;
     while(verif == 0)
     {
-        for(j=0;j<nblienTotal;j++)
+
+        for(j=0;j<nblienTotalApresModif;j++)
             {
-                ligne = (int)matrice_H[1][j]-1;
-                col = (int)matrice_H[2][j]-1;
-                vecteur_n2[col] = vecteur_n2[col] + (matrice_H[0][j] * vecteur_n1[ligne]);
+                //printf("toto = %d \n", (int)matrice_H_Modif[1][j]-1);
+                ligne = (int)matrice_H_Modif[1][j]-1;
+                col = (int)matrice_H_Modif[2][j]-1;
+                vecteur_n2_modif[col] = vecteur_n2_modif[col] + (matrice_H_Modif[0][j] * vecteur_n1_modif[ligne]);
             }
-        /*for(i=0;i<size_moins;i++)
-        {
-            printf("vecteur_2[%d] = %lf \n",i,vecteur_n2[i]);
-            vecteur_n1[i] = vecteur_n2[i];
-            vecteur_n2[i] = 0;
-        }*/
         //printf("\n");
         //verif++;
-    for(i=0; i<size_moins ; i++)
+    for(i=0; i<sizeApresModif ; i++)
     {
-        somme = vecteur_n2[i] - vecteur_n1[i];
+        somme = vecteur_n2_modif[i] - vecteur_n1_modif[i];
         if(somme<0)
         {
             somme = -somme;
         }
         sommevec = sommevec + somme;
         //
-        //printf("difference vecteur = %lf \n", sommevec);
+        printf("%d \\ %lf - %lf = %lf \n",i,vecteur_n2_modif[i], vecteur_n1_modif[i], somme);
     }
-    //printf("SOMME VEC = %lf\n",sommevec);
+    printf("Somme vec = %lf\n",sommevec);
+    //printf("SOMME VEC modif = %0.50lf\n",sommevec);
     //printf("Somme vec = %lf \n",sommevec);
-    if(sommevec<pow(10,-6))
+    if(sommevec<pow(10,-3))
     {
         verif = 1;
     }
     else
     {
-        for(i=0; i<size_moins; i++)
+        for(i=0; i<sizeApresModif; i++)
         {
-            vecteur_n1[i] = vecteur_n2[i];
-            vecteur_n2[i] = 0;
+            vecteur_n1_modif[i] = vecteur_n2_modif[i];
+            vecteur_n2_modif[i] = 0;
             //printf("Iteration %d : vecteur1_modif[%d] = %lf \n",iteration, i, vecteur_n1[i]);
         }
 
     }
+    somme=0.0;
+    //renormalisation
+    for(i=0; i<sizeApresModif; i++)
+    {
+        somme = somme + vecteur_n1_modif[i];
+        if(somme > 1)
+        {
+            vecteur_n1_modif[i] = vecteur_n1_modif[i] / sizeApresModif;
+        }
+    }
+    somme=0.0;
+    /*for(i=0; i<sizeApresModif; i++)
+    {
+        printf("vecteur_n1_Norma[%d] = %lf\n",i,vecteur_n1_modif[i]);
+    }
+    printf("Normmmmaaa = %lf \n", somme);*/
     sommevec = 0.0;
     iteration++;
     somme = 0.0;
@@ -342,7 +379,7 @@ void verifConvergenceApresModif()
     {
         printf("vecteur[%d] = %lf\n",i,vecteur_n1[i]);
     }*/
-    printf("Nb iteration = %d\n", iteration);
+    printf("Nb iteration apres modif = %d\n", iteration);
 
     /*for(i=0;i<sizeApresModif;i++)
     {
