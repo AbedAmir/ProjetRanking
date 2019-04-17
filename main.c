@@ -35,8 +35,8 @@ int main()
     {
         sommetSupp[i] = -1;
     }
-    /*ALGO 1
-    algoAddAndSuppSommet(1,5 , 10); // puisque les nouveau sommets ne pointent pas sur des pages 'proba 0 donc multiplication deja a nulle' donc le nombre d'iteration varie en fonction du nombre de sommets supprimer si on supprime un petit nombre il devra recalculer beaucoup pour converger et plus on supprime plus il met moins de temps a converger
+    //ALGO 1
+    /*algoAddAndSuppSommet(3,5); // puisque les nouveau sommets ne pointent pas sur des pages 'proba 0 donc multiplication deja a nulle' donc le nombre d'iteration varie en fonction du nombre de sommets supprimer si on supprime un petit nombre il devra recalculer beaucoup pour converger et plus on supprime plus il met moins de temps a converger
     for(i=0;i<sommetSuppSizeMax;i++)
     {
         if(sommetSupp[i] >=0)
@@ -44,19 +44,19 @@ int main()
             sommetSuppSize++;
         }
     }
-    verifConvergenceAddSuppSommet();
-    */
-    /* ALGO 2
-    algoAddSommetSeulement(5,5);
+    verifConvergenceAddSuppSommet();*/
+
+    // ALGO 2
+    //algoAddSommetSeulement(5,5);
     //free(matrice_H);
-    verifConvergenceAddSommetSeulement(); // l'algo boucle a l'infini je ne sais pas pourquoi, pourtant la nouvelle matrice est stoquastique et on normalise le vecteur a chaque fois
-    */
+    //verifConvergenceAddSommetSeulement(); // l'algo boucle a l'infini je ne sais pas pourquoi, pourtant la nouvelle matrice est stoquastique et on normalise le vecteur a chaque fois
+
     //ALGO 3
-    // Remarque quand on supprime des liens il faut en rajouter sinon ça boucle a l'infini et ce car le vecteur n'est pas en norme 1 "Car la formule de l'ennoncé n'est pas appliqué"
+    // Remarque quand on supprime des sommets il faut en rajouter sinon ça boucle a l'infini et ce car le vecteur n'est pas en norme 1 "Car la formule de l'ennoncé n'est pas appliqué"
     // Remarque 2 : on ne peut pas supprimer plus de sommets que ceux de l'etat initial ex: 8 pour web1.txt
     // Remarque 3 : si on ajoute des sommets seulement on converge en 1 iteration car les valeurs des nouveau sommets dans le vecteur sera de 0 "Car pas de sommets disparu" donc en une muliplication on reconverge "Vu que des 0 et le reste c'est les valeur avant le modification"
     // Remarque 4 : Si vraiment on ajoute un nombre de liens trés superieur au nombre de sommets ajouter (genre 10 000 liens pour 500) la convergence va etre plus lente que si on fait un nombre de lien proche du nombre de sommets ajoutés (il aura plus du mal a converger rapidement car les valeurs du vecteur x et des liens serons de plus en plus petite
-    algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(0,5000,500);
+    algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(0,15,90);
     //Plus on supprime de lien plus ça converge vite "Qlq soit le nombre de sommet ou de liens ajouter car la priorité est l'initialisation du vecteur <Formule enoncé>"
     //Aprés si on ajoute des liens seulement --> plus on ajoute de lien plus il converge plus vite car les proba serons encore plus petite --> multiplication sera plus petite
     //Quand on supprime pas de sommet le nombre de sommets ajouter ne va pas vraiment influencer la convergence car les nouveau sommet auront une valeur de 0 dans le vecteur X et donc seulement la petite proba des liens va influencer la convergence
@@ -133,7 +133,7 @@ void algoAddSommetSeulement(int nombreSommetAjoute, int nombreLiensAjoute)
 
         col = randNumber(1, sizeApresModif);
         //printf("Ligne = %d \n",ligne);
-        /*for(j=0; j<nblienTotalApresModif; j++)
+        for(j=size_moins; j<nblienTotalApresModif; j++)
         {
             if(matrice_H_Modif[1][j] == ligne)
             {
@@ -144,22 +144,22 @@ void algoAddSommetSeulement(int nombreSommetAjoute, int nombreLiensAjoute)
         }
         if(cpt == 0) //Pour eviter le problm de IND0.0
         {
-            proba = 0.0;
+            proba = 1;
         }
         else
         {
             proba = (double)1/cpt;
         }
-        */
+
         //printf("proba = %lf \n",proba);
-        //matrice_H_Modif[0][i] = proba;
+        matrice_H_Modif[0][i] = proba;
         matrice_H_Modif[1][i] = ligne;
         matrice_H_Modif[2][i] = col;
         //printf("Ligne = %d || cpt= %lf\n",ligne, cpt);
-        //cpt=0;
+        cpt=0;
         //printf("matricemodfi[%d] = %lf \n",i, matrice_H_Modif[0][i]);
     }
-    for(i=nblienTotal; i<nblienTotalApresModif; i++)
+    /*for(i=nblienTotal; i<nblienTotalApresModif; i++)
     {
         for(j=0; j<nblienTotalApresModif; j++)
         {
@@ -180,16 +180,16 @@ void algoAddSommetSeulement(int nombreSommetAjoute, int nombreLiensAjoute)
         }
         matrice_H_Modif[0][i] = proba;
         cpt = 0;
-    }
+    }*/
 }
 
-void algoAddAndSuppSommet(int nombreSommetSupp, int nombreSommetAjoute, int nombreLiensAjoute)
+void algoAddAndSuppSommet(int nombreSommetSupp, int nombreSommetAjoute)
 {
     //On ajoute pas de liens pour les nouveau sommets et on modifie pas les lien de l'ancien grave
     // On d'autre terme on modifie seulement le vecteur X
     S = nombreSommetAjoute;
     R = nombreSommetSupp;
-    nblienTotalApresModif = nblienTotal + nombreLiensAjoute ;
+    nblienTotalApresModif = nblienTotal ;
     //Allocation nouvelle stucture augmenté avec 50 lien en plus
     matrice_H_Modif = malloc(nblienTotalApresModif * sizeof(double*));
     matrice_H_Modif[0] = malloc(nblienTotalApresModif * sizeof(double)); //vecteur proba
@@ -599,7 +599,7 @@ void verifConvergenceAddSommetSeulement()
         //
         printf("%d \\ %lf - %lf = %lf \n",i,vecteur_n2_modif[i], vecteur_n1_modif[i], somme);
     }
-    //printf("Somme vec = %lf\n",sommevec);
+    printf("Somme vec = %lf\n",sommevec);
     //printf("SOMME VEC modif = %0.50lf\n",sommevec);
     //printf("Somme vec = %lf \n",sommevec);
     if(sommevec<pow(10,-2))
@@ -619,7 +619,7 @@ void verifConvergenceAddSommetSeulement()
     }
     somme=0.0;
     //renormalisation
-    printf("var noramli = %lf \n", varNormalisation);
+    /*printf("var noramli = %lf \n", varNormalisation);
     for(i=0; i<sizeApresModif; i++)
     {
         vecteur_n1_modif[i] = vecteur_n1_modif[i] / varNormalisation;
@@ -677,7 +677,7 @@ void verifConvergenceAddSuppSommet()
             vecteur_n2_modif[i] = 0;
 
         }*/
-        printf("MA SOMMMMME = %lf \n", tempDouble);
+        //printf("MA SOMMMMME = %lf \n", tempDouble);
     while(verif == 0)
     {
         for(j=0;j<nblienTotalApresModif;j++)
@@ -732,7 +732,7 @@ void verifConvergenceAddSuppSommet()
         //printf("difference vecteur = %lf \n", sommevec);
 
     }
-    printf("SOMME VEC = %lf\n",sommevec);
+    //printf("SOMME VEC = %lf\n",sommevec);
     //printf("Somme vec = %lf \n",sommevec);
     if(sommevec<pow(10,-2))
     {
@@ -760,6 +760,6 @@ void verifConvergenceAddSuppSommet()
     {
         printf("vecteur[%d] = %lf\n",i,vecteur_n1[i]);
     }*/
-    printf("Nb iteration = %d\n", iteration);
+    printf("Nb iteration apres modif = %d\n", iteration);
 }
 
