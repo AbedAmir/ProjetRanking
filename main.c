@@ -4,8 +4,8 @@
 #include <math.h>
 #define tailleMax 37000
 #define sommetSuppSizeMax 200
-int  sommetSupp[sommetSuppSizeMax],sommetSuppSize=0,temp,temp2,S,R,i=0,j=0,cpt,size,cptNbLien=0, size_moins,sizeApresModif,nblienTotal,nblienTotalApresModif, nbLien,nbLienFinal, nbColonne=0, colonneNotProba=5,indice=0, *listeLigne = NULL, *listeLigne_Modif = NULL; //Si colonneNotProba = 1 --> c'est une colonne sinon c'est une proba
-int *vecteur_FT;
+int  sommetSupp[sommetSuppSizeMax],sommetSuppSize=0,temp,temp2,S,R,i=0,j=0,cpt,size,cptNbLien=0,y, size_moins,sizeApresModif,nblienTotal,nblienTotalApresModif, nbLien,nbLienFinal, nbColonne=0, colonneNotProba=5,indice=0, *listeLigne = NULL, *listeLigne_Modif = NULL; //Si colonneNotProba = 1 --> c'est une colonne sinon c'est une proba
+int *vecteur_FT, *vecteur_FT_Modif;
 char  *caractere;
 double somme=0.0,proba, alpha = 0.85, *vecteur_n1, *vecteur_n2, *vecteur_n1_modif,*vecteur_n2_modif, sommeProbaSommetDisparu,tempDouble;
 double **matrice_H = NULL, **matrice_H_Modif = NULL;
@@ -17,10 +17,12 @@ char *secondword, *word;
 int col=0,ligne=0;
 int main()
 {
+    //Stanford || wb-cs-stanford || in-2004v2 || wikipedia-20051105V2 || wb-edu --> OK
+    //Stanford_BerkeleyV2 || --> NON
     word = strtok(sentence," ");
     cpt=0;
     char chaine[tailleMax] = "";
-    fichier = fopen("in-2004v2.txt","r");
+    fichier = fopen("wb-cs-stanford.txt","r");
     fgets(chaine, tailleMax, fichier); // recup taille
     size = 1 + (int)atof(chaine);
     size_moins = size - 1;
@@ -57,7 +59,7 @@ int main()
     // Remarque 2 : on ne peut pas supprimer plus de sommets que ceux de l'etat initial ex: 8 pour web1.txt
     // Remarque 3 : si on ajoute des sommets seulement on converge en 1 iteration car les valeurs des nouveau sommets dans le vecteur sera de 0 "Car pas de sommets disparu" donc en une muliplication on reconverge "Vu que des 0 et le reste c'est les valeur avant le modification"
     // Remarque 4 : Si vraiment on ajoute un nombre de liens trés superieur au nombre de sommets ajouter (genre 10 000 liens pour 500) la convergence va etre plus lente que si on fait un nombre de lien proche du nombre de sommets ajoutés (il aura plus du mal a converger rapidement car les valeurs du vecteur x et des liens serons de plus en plus petite
-    /*algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(0,15,90);
+    algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(50,100,500);
     //Plus on supprime de lien plus ça converge vite "Qlq soit le nombre de sommet ou de liens ajouter car la priorité est l'initialisation du vecteur <Formule enoncé>"
     //Aprés si on ajoute des liens seulement --> plus on ajoute de lien plus il converge plus vite car les proba serons encore plus petite --> multiplication sera plus petite
     //Quand on supprime pas de sommet le nombre de sommets ajouter ne va pas vraiment influencer la convergence car les nouveau sommet auront une valeur de 0 dans le vecteur X et donc seulement la petite proba des liens va influencer la convergence
@@ -68,7 +70,7 @@ int main()
             sommetSuppSize++;
         }
     }
-    verifConvergenceAddSuppSommet();*/
+    //verifConvergenceAddSuppSommet();
     return 0;
 }
 
@@ -310,10 +312,12 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
     sizeApresModif = size_moins + nombreSommetAjoute;
     vecteur_n1_modif = (double *) malloc(sizeof(double)*sizeApresModif);
     vecteur_n2_modif = (double *) malloc(sizeof(double)*sizeApresModif);
+    vecteur_FT_Modif = (int *) malloc(sizeof(int)*sizeApresModif);
     for(i=0; i<size_moins ; i++)
     {
         vecteur_n1_modif[i] = vecteur_n1[i];
         vecteur_n2_modif[i] = 0;
+        vecteur_FT_Modif[i] = vecteur_FT[i];
     }
     //printf("size = %d\n", size);
     //printf("vecteur[%d] = %lf \n", size_moins-1, vecteur_n1[size_moins-1]);
@@ -324,6 +328,7 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
         //ici modif aprés
         vecteur_n1_modif[j] = 0.0;
         vecteur_n2_modif[j] = 0.0;
+        vecteur_FT_Modif[j] = 1;
     }
     // Modification du vecteur et supp des ancien sommets et ajout des nouveau avec init
     // Je decide aleatoirement quels sommets vont etre supprimer
@@ -331,16 +336,43 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
     sommeProbaSommetDisparu = 0.0;
     while(i<R)
     {
-        temp = randNumber(1,size_moins);
+        temp = randNumber(1,size_moins)-1;
         if(vecteur_n1_modif[temp] != -1)
         {
+            //Si le sommet supprimé est B et on a A qui pointe sur B --> On verifie que le sommet A n'a pas que ce lien "si c'est le cas alors vecteurFT_Modif[A] = 1";
+            for(y=0;y<size_moins; y++)
+            {
+                cpt=0;
+                if((matrice_H_Modif[2][y] == temp)&& (vecteur_n1_modif[y] != -1))
+                {
+                    cpt++;
+
+                }
+            }
+            if(cpt==0)
+            {
+                t = (int)matrice_H_Modif[1][y];
+                if(vecteur_n1_modif[t] != -1)
+                {
+                    vecteur_FT_Modif[t] = 1;
+                }
+
+            }
+            cpt=0;
+            //printf("TEMP = %d \n",temp);
             sommeProbaSommetDisparu = sommeProbaSommetDisparu + vecteur_n1_modif[temp];
             vecteur_n1_modif[temp] = -1;
+            vecteur_FT_Modif[temp] = -1; // On notifi dans le vecteur que le sommet a etait supp
             //printf("Sommet supp = %d\n", temp);
             sommetSupp[i] = temp; // on stock tout les sommets supprimer dans un tableau
             i++;
         }
     }
+    /*for(i=0;i<sizeApresModif;i++)
+    {
+        printf("VecteurFT_Modif[%d] = %d\n", i, vecteur_FT_Modif[i]);
+    }*/
+    t=0;
     // Init de la proba des nouveau sommets pour le vecteur
     for(j=size_moins; j<sizeApresModif; j++)
     {
@@ -386,7 +418,12 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
     {
         cpt=0;
         temp = randNumber(1,sizeApresModif); // ligne
+        if(temp>9914)
+        {
+            //printf("Temp = %d  \n", temp);
+        }
         temp2 = randNumber(1,sizeApresModif); // colonne
+        vecteur_FT_Modif[temp-1] = 0;
         if((vecteur_n1_modif[temp] != -1) && (vecteur_n1_modif[temp2] != -1))
         {
             for(j=0; j<nblienTotalApresModif;j++)
@@ -418,6 +455,10 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
             }
             i++;
         }
+    }
+    for(i=0;i<sizeApresModif;i++)
+    {
+        printf("VecteurFT_Modif[%d] = %d\n", i, vecteur_FT_Modif[i]);
     }
     /*for(i=0; i<nblienTotalApresModif; i++ )
     {
@@ -553,11 +594,6 @@ void verifConvergence()
         for(j=0;j<size_moins;j++)
         {
             vecteur_n2[j] = vecteur_n2[j] * alpha + ((1-alpha)/size_moins) + (alpha*(somme/size_moins));
-            /*if(vecteur_FT[j] == 1)
-            {
-                vecteur_n2[j] = vecteur_n2[j] + ;
-
-            }*/
         }
         somme = 0.0;
     for(i=0; i<size_moins ; i++)
