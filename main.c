@@ -5,13 +5,14 @@
 #define tailleMax 37000
 #define sommetSuppSizeMax 200
 int  sommetSupp[sommetSuppSizeMax],sommetSuppSize=0,temp,temp2,S,R,i=0,j=0,cpt,size,cptNbLien=0, size_moins,sizeApresModif,nblienTotal,nblienTotalApresModif, nbLien,nbLienFinal, nbColonne=0, colonneNotProba=5,indice=0, *listeLigne = NULL, *listeLigne_Modif = NULL; //Si colonneNotProba = 1 --> c'est une colonne sinon c'est une proba
+int *vecteur_FT;
 char  *caractere;
-double somme=0.0,proba, alpha = 1, *vecteur_n1, *vecteur_n2, *vecteur_n1_modif,*vecteur_n2_modif, sommeProbaSommetDisparu,tempDouble;
+double somme=0.0,proba, alpha = 0.85, *vecteur_n1, *vecteur_n2, *vecteur_n1_modif,*vecteur_n2_modif, sommeProbaSommetDisparu,tempDouble;
 double **matrice_H = NULL, **matrice_H_Modif = NULL;
 int verif = 0, iteration=0, t,tt;
 double sommevec=0.0;
 FILE* fichier=NULL;
-char sentence[10000] ;
+char sentence[100000] ;
 char *secondword, *word;
 int col=0,ligne=0;
 int main()
@@ -19,7 +20,7 @@ int main()
     word = strtok(sentence," ");
     cpt=0;
     char chaine[tailleMax] = "";
-    fichier = fopen("web1.txt","r");
+    fichier = fopen("in-2004v2.txt","r");
     fgets(chaine, tailleMax, fichier); // recup taille
     size = 1 + (int)atof(chaine);
     size_moins = size - 1;
@@ -56,7 +57,7 @@ int main()
     // Remarque 2 : on ne peut pas supprimer plus de sommets que ceux de l'etat initial ex: 8 pour web1.txt
     // Remarque 3 : si on ajoute des sommets seulement on converge en 1 iteration car les valeurs des nouveau sommets dans le vecteur sera de 0 "Car pas de sommets disparu" donc en une muliplication on reconverge "Vu que des 0 et le reste c'est les valeur avant le modification"
     // Remarque 4 : Si vraiment on ajoute un nombre de liens trés superieur au nombre de sommets ajouter (genre 10 000 liens pour 500) la convergence va etre plus lente que si on fait un nombre de lien proche du nombre de sommets ajoutés (il aura plus du mal a converger rapidement car les valeurs du vecteur x et des liens serons de plus en plus petite
-    algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(0,15,90);
+    /*algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(0,15,90);
     //Plus on supprime de lien plus ça converge vite "Qlq soit le nombre de sommet ou de liens ajouter car la priorité est l'initialisation du vecteur <Formule enoncé>"
     //Aprés si on ajoute des liens seulement --> plus on ajoute de lien plus il converge plus vite car les proba serons encore plus petite --> multiplication sera plus petite
     //Quand on supprime pas de sommet le nombre de sommets ajouter ne va pas vraiment influencer la convergence car les nouveau sommet auront une valeur de 0 dans le vecteur X et donc seulement la petite proba des liens va influencer la convergence
@@ -67,7 +68,7 @@ int main()
             sommetSuppSize++;
         }
     }
-    verifConvergenceAddSuppSommet();
+    verifConvergenceAddSuppSommet();*/
     return 0;
 }
 
@@ -439,6 +440,7 @@ void lectureMatrice()
     matrice_H[2] = malloc(nblienTotal * sizeof(double)); //vecteur numero colonne
     vecteur_n1 = (double *) malloc(sizeof(double)*size_moins);
     vecteur_n2 = (double *) malloc(sizeof(double)*size_moins);
+    vecteur_FT = (int *) malloc(sizeof(int)*size_moins);
     int nbLigne = 0;
     while(fgets(sentence,tailleMax, fichier) != NULL) // parcours fichier ligne par ligne
         {
@@ -448,16 +450,19 @@ void lectureMatrice()
                     {
                     word = strtok(sentence," ");
                     nbLigne = (int) atof(word);
-                    //printf("Ligne test bebe = %d\n", nbLigne);
+
                     secondword = strtok(NULL," ");
                     nbLien = (int) atof(secondword);
+                    //printf("Ligne  = %d \t nbLien = %d \n", nbLigne, nbLien);
                     if(nbLien != 0)
                     {
                         //listeLigne[j] = indice;
+                        vecteur_FT[nbLigne - 1] = (int)0;
                     }
                     else
                     {
                         //listeLigne[j] = -1;
+                        vecteur_FT[nbLigne - 1] = (int)1;
                         j++;
                         //("\tTest ici ligne = %d \n",nbLigne);
                     }
@@ -494,6 +499,10 @@ void lectureMatrice()
     {
         printf("Impossible d'ouvrir le fichier");
     }
+    /*for(i=0 ; i<size_moins; i++)
+    {
+        printf("Vecteur_FT[%d] = %d \n", i, vecteur_FT[i]);
+    }*/
     fclose(fichier);
 }
 void initDebutVecteurN1N2()
@@ -517,7 +526,7 @@ void verifConvergence()
             {
                 ligne = (int)matrice_H[1][j]-1;
                 col = (int)matrice_H[2][j]-1;
-                vecteur_n2[col] = vecteur_n2[col] + (matrice_H[0][j] * vecteur_n1[ligne]);
+                vecteur_n2[col] = (vecteur_n2[col] + (matrice_H[0][j] * vecteur_n1[ligne]));
             }
         /*for(i=0;i<size_moins;i++)
         {
@@ -527,6 +536,30 @@ void verifConvergence()
         }*/
         //printf("\n");
         //verif++;
+        // Cas a faire sinon
+        /*for(j=0;j<size_moins;j++)
+        {
+            vecteur_n2[j] = vecteur_n2[j] * 0.99;
+        }*/
+        // On Calcul BETA
+        for(i=0;i<size_moins; i++)
+        {
+            if(vecteur_FT[i] == 1)
+            {
+                somme = somme + vecteur_n1[i];
+            }
+        }
+        //Construction matrice G
+        for(j=0;j<size_moins;j++)
+        {
+            vecteur_n2[j] = vecteur_n2[j] * alpha + ((1-alpha)/size_moins) + (alpha*(somme/size_moins));
+            /*if(vecteur_FT[j] == 1)
+            {
+                vecteur_n2[j] = vecteur_n2[j] + ;
+
+            }*/
+        }
+        somme = 0.0;
     for(i=0; i<size_moins ; i++)
     {
         somme = vecteur_n2[i] - vecteur_n1[i];
@@ -540,7 +573,7 @@ void verifConvergence()
     }
     //printf("SOMME VEC = %lf\n",sommevec);
     //printf("Somme vec = %lf \n",sommevec);
-    if(sommevec<pow(10,-2))
+    if(sommevec<pow(10,-12))
     {
         verif = 1;
     }
