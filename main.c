@@ -22,7 +22,7 @@ int main()
     word = strtok(sentence," ");
     cpt=0;
     char chaine[tailleMax] = "";
-    fichier = fopen("wb-cs-stanford.txt","r");
+    fichier = fopen("Stanford.txt","r");
     fgets(chaine, tailleMax, fichier); // recup taille
     size = 1 + (int)atof(chaine);
     size_moins = size - 1;
@@ -59,7 +59,7 @@ int main()
     // Remarque 2 : on ne peut pas supprimer plus de sommets que ceux de l'etat initial ex: 8 pour web1.txt
     // Remarque 3 : si on ajoute des sommets seulement on converge en 1 iteration car les valeurs des nouveau sommets dans le vecteur sera de 0 "Car pas de sommets disparu" donc en une muliplication on reconverge "Vu que des 0 et le reste c'est les valeur avant le modification"
     // Remarque 4 : Si vraiment on ajoute un nombre de liens trés superieur au nombre de sommets ajouter (genre 10 000 liens pour 500) la convergence va etre plus lente que si on fait un nombre de lien proche du nombre de sommets ajoutés (il aura plus du mal a converger rapidement car les valeurs du vecteur x et des liens serons de plus en plus petite
-    algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(1,10,0);
+    algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(2900,0,000);
     //Plus on supprime de lien plus ça converge vite "Qlq soit le nombre de sommet ou de liens ajouter car la priorité est l'initialisation du vecteur <Formule enoncé>"
     //Aprés si on ajoute des liens seulement --> plus on ajoute de lien plus il converge plus vite car les proba serons encore plus petite --> multiplication sera plus petite
     //Quand on supprime pas de sommet le nombre de sommets ajouter ne va pas vraiment influencer la convergence car les nouveau sommet auront une valeur de 0 dans le vecteur X et donc seulement la petite proba des liens va influencer la convergence
@@ -71,6 +71,7 @@ int main()
         }
     }
     verifConvergenceAddSuppSommet();
+    //verifConvergence();
     return 0;
 }
 
@@ -563,6 +564,7 @@ void verifConvergence()
                 ligne = (int)matrice_H[1][j]-1;
                 col = (int)matrice_H[2][j]-1;
                 vecteur_n2[col] = (vecteur_n2[col] + (matrice_H[0][j] * vecteur_n1[ligne]));
+                //printf("ligne = %d \t matriceModif[1][j] = %lf\n", ligne, matrice_H[1][j]);
             }
         /*for(i=0;i<size_moins;i++)
         {
@@ -604,7 +606,7 @@ void verifConvergence()
     }
     //printf("SOMME VEC = %lf\n",sommevec);
     //printf("Somme vec = %lf \n",sommevec);
-    if(sommevec<pow(10,-9))
+    if(sommevec<pow(10,-12))
     {
         verif = 1;
         /*for(t=0;t<size_moins;t++)
@@ -726,71 +728,74 @@ void verifConvergenceAddSommetSeulement()
 }
 void verifConvergenceAddSuppSommet()
 {
-    iteration = 0;
-    printf("\n");
-    somme = 0.0;
-    verif=0;
-    tempDouble = 0;
+    /*for(i=0; i<nblienTotalApresModif; i++ )
+    {
+        printf("MatriceModfi[1][%d] = %lf || MatriceModfi[2][%d] = %lf || MatriceModfi[0][%d] = %lf\n",i,matrice_H_Modif[1][i],i,matrice_H_Modif[2][i],i,matrice_H_Modif[0][i]);
+    }*/
+    /*cpt=0;
+    for(i=0;i<sizeApresModif;i++)
+    {
+        if(vecteur_n1_modif[i]<0)
+        {
+            cpt++;
+        }
+        printf("vecteur_n1_Modif[%d] = %lf\t vecteur_FT_Modif[%d] = %d\n",i,vecteur_n1_modif[i],i,vecteur_FT_Modif[i]);
+    }
+    printf("CPT = %d\n",cpt);*/
+    for(i=0;i<sizeApresModif;i++)
+    {
+        if(vecteur_n1_modif[i]<0)
+        {
+            vecteur_n2_modif[i] = -1;
+        }
+    }
     /*for(i=0;i<sizeApresModif;i++)
+    {
+        if(vecteur_n1_modif[i]<0)
         {
-
-            printf("Temp DOUBLE = %lf \n",tempDouble);
-            if(vecteur_n1_modif[i] >= 0)
-            {
-                tempDouble = tempDouble + vecteur_n1_modif[i];
-            }
-
-        }*/
-        /*for(i=0;i<sizeApresModif;i++)
-        {
-            printf("Vecteur_n1_modif [%d] = %0.11lf\n",i,vecteur_n1_modif[i]);
-
-        }*/
-        //printf("MA SOMMMMME = %lf \n", tempDouble);
+            cpt++;
+        }
+        printf("vecteur_n1_Modif[%d] = %lf\t vecteur_n2_Modif[%d] = %lf\t vecteur_FT_Modif[%d] = %d\n",i,vecteur_n1_modif[i],i,vecteur_n2_modif[i],i,vecteur_FT_Modif[i]);
+    }*/
+    iteration = 0;
+    somme = 0.0;
+    verif = 0;
+    sommevec = 0;
     while(verif == 0)
     {
-
         for(j=0;j<nblienTotalApresModif;j++)
             {
-                //on verif combien de sommets on a supp pour savoir faire la muultiplication
+                t = 0;
                 temp = 0;
                 temp2 = 0;
-                ligne = (int)matrice_H_Modif[1][j]-1;
-                col = (int)matrice_H_Modif[2][j]-1;
-                //printf(" ligne = %d\n", ligne);
-                /*for(t=0; t<sommetSuppSize;t++)
+                ligne = (int)matrice_H[1][j]-1;
+                col = (int)matrice_H[2][j]-1;
+                while((t<temp) || (t<temp2))
                 {
-                    if(sommetSupp[i]<ligne)
+                    if(t<temp)
                     {
-                        temp++;
+                        if(vecteur_FT_Modif[t]<0)
+                        {
+                            temp++;
+                        }
                     }
-                    if(sommetSupp[i]<col)
+                    if(t<temp2)
                     {
-                        temp2++;
+                        if(vecteur_FT_Modif[t]<0)
+                        {
+                            temp2++;
+                        }
                     }
-                }*/
-                for(t=0;t<sizeApresModif;t++)
-                {
-                    //printf("vecteur_n1-ICI[%d] = %lf\t ligne = %d\n", t,vecteur_n1_modif[t], ligne);
-                    if((t<ligne) && (vecteur_n1_modif[t] <=0))
-                    {
-                        temp++;
-                    }
-                    if((t<col) && (vecteur_n1_modif[t] <=0))
-                    {
-                        temp2++;
-                    }
+                    t++;
                 }
-                if((vecteur_n1_modif[ligne+temp] >=0) && (vecteur_n2_modif[col+temp2]) >= 0)
+                if((matrice_H_Modif[0][j] != -1) && (vecteur_n1_modif[ligne+temp])!=-1)
                 {
-                    vecteur_n2_modif[col+temp2] = vecteur_n2_modif[col+temp2] + (matrice_H_Modif[0][j] * vecteur_n1_modif[ligne+temp]);
-                    //printf("Vecteur_n1_modif [%d] = %0.11lf\n",col+temp2,vecteur_n2_modif[col+temp2]);
+                    //printf("vecteur_n2_modif[%d] --> %0.10lf = (%0.10lf + (%0.10lf * %0.10lf))\n",col+temp2, vecteur_n2_modif[col+temp2] = (vecteur_n2_modif[col+temp2] + (matrice_H_Modif[0][j] * vecteur_n1_modif[ligne+temp])),vecteur_n2_modif[col+temp2] , matrice_H_Modif[0][j] , vecteur_n1_modif[ligne+temp]);
+                    vecteur_n2_modif[col+temp2] = (vecteur_n2_modif[col+temp2] + (matrice_H_Modif[0][j] * vecteur_n1_modif[ligne+temp]));
                 }
+                //printf("vecteur_n2_modif[%d] --> %0.10lf = (%0.10lf + (%0.10lf * %0.10lf))\n",col+temp2, vecteur_n2_modif[col+temp2] = (vecteur_n2_modif[col+temp2] + (matrice_H_Modif[0][j] * vecteur_n1_modif[ligne+temp])),vecteur_n2_modif[col+temp2] , matrice_H_Modif[0][j] , vecteur_n1_modif[ligne+temp]);
+                //vecteur_n2_modif[col+temp2] = (vecteur_n2_modif[col+temp2] + (matrice_H_Modif[0][j] * vecteur_n1_modif[ligne+temp]));
 
-            }
-            for(t=0;t<sizeApresModif;t++)
-            {
-                printf("VECTEUR_N2[%d] = %0.10lf |||| VECTEUR_N1[%d] = %0.10lf\n",t,vecteur_n2_modif[t],t,vecteur_n1_modif[t]);
             }
         /*for(i=0;i<size_moins;i++)
         {
@@ -798,8 +803,7 @@ void verifConvergenceAddSuppSommet()
             vecteur_n1[i] = vecteur_n2[i];
             vecteur_n2[i] = 0;
         }*/
-        //printf("\n");
-        //verif++;
+        // On Calcul BETA
         for(i=0;i<sizeApresModif; i++)
         {
             if(vecteur_FT_Modif[i] == 1)
@@ -807,66 +811,58 @@ void verifConvergenceAddSuppSommet()
                 somme = somme + vecteur_n1_modif[i];
             }
         }
-        //printf("SOMME = %lf\n",somme);
         //Construction matrice G
-        for(j=0;j<size_moins;j++)
+        for(j=0;j<sizeApresModif;j++)
         {
-            vecteur_n2_modif[j] = vecteur_n2_modif[j] * alpha + ((1-alpha)/sizeApresModif) + (alpha*(somme/sizeApresModif));
+            if(vecteur_FT_Modif[j]!=-1)
+            {
+                vecteur_n2_modif[j] = vecteur_n2_modif[j] * alpha + ((1-alpha)/sizeApresModif) + (alpha*(somme/sizeApresModif));
+            }
+
         }
         somme = 0.0;
-        /*for(t=0;t<sizeApresModif;t++)
-            {
-                printf("VECTEUR_N2[%d] = %0.10lf |||| VECTEUR_N1[%d] = %0.10lf\n",t,vecteur_n2_modif[t],t,vecteur_n1_modif[t]);
-            }*/
+        /*for(j=0;j<sizeApresModif;j++)
+        {
+            printf("VEcteur n2[%d] = %0.10lf\n",j,vecteur_n2_modif[i]);
+        }*/
+        somme = 0.0;
     for(i=0; i<sizeApresModif ; i++)
     {
-        /*if(vecteur_n1_modif[i]>=0)
-        {
-
-            //printf("vecteurN2 - vecteurN1 = %lf - %lf = %lf\n",vecteur_n2_modif[i],vecteur_n1_modif[i], somme);
-        }*/
-        if(vecteur_n1_modif[i]!=-1)
+        if(vecteur_FT_Modif[i] != -1)
         {
             somme = vecteur_n2_modif[i] - vecteur_n1_modif[i];
-        }
-        else
-        {
-            //vecteur_n2_modif[i] = vecteur_n1_modif[i];
-        }
-
-        if(somme<0)
-        {
-            //printf("difference vecteur = %0.10lf \n", somme);
-            printf(" %0.10lf  - %0.10lf = %0.10lf\n",vecteur_n2_modif[i],vecteur_n1_modif[i], sommevec);
-
+            //printf("VEcteur n2[%d] = %0.10lf - %0.10lf = %0.10lf \n",i,vecteur_n2_modif[i], vecteur_n1_modif[i], somme);
+            //printf("SOMME  = %0.10lf \n",somme);
+            if(somme<0)
+            {
+                somme = -somme;
+            }
+            sommevec = sommevec + somme;
+            //printf("Somme = %0.10lf\n", somme);
         }
 
-        /*else
-        {
-            somme = vecteur_n2_modif[i] - 0;
-        }*/
-        if(somme<0)
-        {
-            somme = -somme;
-        }
-        sommevec = sommevec + somme;
-
-        printf("difference vecteur = %0.10lf \n", sommevec);
 
     }
-    //printf("SOMME VEC = %0.12lf\n",sommevec);
-    //printf("Somme vec = %lf \n",sommevec);
+     printf("SOMME VEC = %0.11lf \n",sommevec);
     if(sommevec<pow(10,-9))
     {
         verif = 1;
+        /*for(t=0;t<size_moins;t++)
+        {
+            printf("VECTEUR_n1_FINAL[%d] = %0.10lf\n",t,vecteur_n2[t]);
+        }*/
+        //printf("SOMME VEC FIN = %0.10lf\n", sommevec);
     }
     else
     {
-        for(i=0; i<sizeApresModif; i++)
+        for(i=0; i<size_moins; i++)
         {
-            vecteur_n1_modif[i] = vecteur_n2_modif[i];
-            vecteur_n2_modif[i] = 0;
-            //printf("Iteration %d : vecteur1_modif[%d] = %lf \n",iteration, i, vecteur_n1[i]);
+            if(vecteur_FT_Modif[i] != -1)
+            {
+               vecteur_n1_modif[i] = vecteur_n2_modif[i];
+               vecteur_n2_modif[i] = 0;
+            }
+
         }
 
     }
@@ -874,14 +870,6 @@ void verifConvergenceAddSuppSommet()
     iteration++;
     somme = 0.0;
     }
-    /*for(i=0; i<size_moins; i++)
-    {
-        printf("vecteur_2[%d]=%lf \n",i,vecteur_n2[i]);
-    }*/
-    /*for(i=0;i<size_moins;i++)
-    {
-        printf("vecteur[%d] = %lf\n",i,vecteur_n1[i]);
-    }*/
-    printf("Nb iteration apres modif = %d\n", iteration);
+    printf("Nb iteration = %d\n", iteration);
 }
 
