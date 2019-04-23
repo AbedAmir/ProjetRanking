@@ -64,7 +64,7 @@ int main()
         printf("Vecteur[%d] = %lf - %lf\n",i,vecteur_n2[i],vecteur_n1[i]);
     }*/
     // Remarque 5 : Si on supprime tout les sommets et on cherche a rajouter des liens on est obligé d'ajouter de nouveau sommets car sinon BUG (le lien d'autra pas de source ni de cible)
-    algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(0,0,0);
+    algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(1,10,0);
     //Plus on supprime de lien plus ça converge vite "Qlq soit le nombre de sommet ou de liens ajouter car la priorité est l'initialisation du vecteur <Formule enoncé>"
     //Aprés si on ajoute des liens seulement --> plus on ajoute de lien plus il converge plus vite car les proba serons encore plus petite --> multiplication sera plus petite
     //Quand on supprime pas de sommet le nombre de sommets ajouter ne va pas vraiment influencer la convergence car les nouveau sommet auront une valeur de 0 dans le vecteur X et donc seulement la petite proba des liens va influencer la convergence
@@ -432,6 +432,25 @@ void verifConvergenceAddSuppSommet()
     {
         printf("MatriceModfi[1][%d] = %lf || MatriceModfi[2][%d] = %lf || MatriceModfi[0][%d] = %lf\n",i,matrice_H_Modif[1][i],i,matrice_H_Modif[2][i],i,matrice_H_Modif[0][i]);
     }
+    for(i=0; i<sizeApresModif ; i++)
+    {
+        if(vecteur_n1_modif[i]>=0)
+        {
+            sommevec = vecteur_n1_modif[i] + somme;
+        }
+
+        //
+        //printf("difference vecteur = %lf \n", sommevec);
+    }
+    if(sommevec<pow(10,-9))
+    {
+        verif = 1;
+        /*for(t=0;t<size_moins;t++)
+        {
+            printf("VECTEUR_n1_FINAL[%d] = %0.10lf\n",t,vecteur_n2[t]);
+        }*/
+        //printf("SOMME VEC FIN = %0.10lf\n", sommevec);
+    }
     // ON COMMENCE LES ITERATIONS
     while(verif == 0)
     {
@@ -460,7 +479,6 @@ void verifConvergenceAddSuppSommet()
             {
                  vecteur_n2_modif[j] = vecteur_n2_modif[j] * alpha + ((1-alpha)/sizeApresModif) + (alpha*(somme/sizeApresModif));
             }
-
         }
         for(i=0; i<sizeApresModif; i++ )
         {
@@ -469,12 +487,17 @@ void verifConvergenceAddSuppSommet()
         somme = 0.0;
         for(i=0; i<sizeApresModif ; i++)
         {
-            somme = vecteur_n2_modif[i] - vecteur_n1_modif[i];
-            if(somme<0)
+            if(vecteur_n1_modif[i]>=0)
             {
-                somme = -somme;
+                printf("V2 - V1 --> %lf - %lf = %lf\n", vecteur_n2_modif[i],vecteur_n1_modif[i],somme);
+                somme = vecteur_n2_modif[i] - vecteur_n1_modif[i];
+                if(somme<0)
+                {
+                    somme = -somme;
+                }
+                sommevec = sommevec + somme;
             }
-            sommevec = sommevec + somme;
+
         //
         //printf("difference vecteur = %lf \n", sommevec);
         }
