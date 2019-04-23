@@ -22,7 +22,7 @@ int main()
     word = strtok(sentence," ");
     cpt=0;
     char chaine[tailleMax] = "";
-    fichier = fopen("Stanford.txt","r");
+    fichier = fopen("wb-cs-stanford.txt","r");
     fgets(chaine, tailleMax, fichier); // recup taille
     size = 1 + (int)atof(chaine);
     size_moins = size - 1;
@@ -59,7 +59,11 @@ int main()
     // Remarque 2 : on ne peut pas supprimer plus de sommets que ceux de l'etat initial ex: 8 pour web1.txt
     // Remarque 3 : si on ajoute des sommets seulement on converge en 1 iteration car les valeurs des nouveau sommets dans le vecteur sera de 0 "Car pas de sommets disparu" donc en une muliplication on reconverge "Vu que des 0 et le reste c'est les valeur avant le modification"
     // Remarque 4 : Si vraiment on ajoute un nombre de liens trés superieur au nombre de sommets ajouter (genre 10 000 liens pour 500) la convergence va etre plus lente que si on fait un nombre de lien proche du nombre de sommets ajoutés (il aura plus du mal a converger rapidement car les valeurs du vecteur x et des liens serons de plus en plus petite
-    algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(281903,0,000);
+    /*for(i=0;i<size_moins;i++)
+    {
+        printf("Vecteur[%d] = %lf - %lf\n",i,vecteur_n2[i],vecteur_n1[i]);
+    }*/
+    algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(0,0,000);
     //Plus on supprime de lien plus ça converge vite "Qlq soit le nombre de sommet ou de liens ajouter car la priorité est l'initialisation du vecteur <Formule enoncé>"
     //Aprés si on ajoute des liens seulement --> plus on ajoute de lien plus il converge plus vite car les proba serons encore plus petite --> multiplication sera plus petite
     //Quand on supprime pas de sommet le nombre de sommets ajouter ne va pas vraiment influencer la convergence car les nouveau sommet auront une valeur de 0 dans le vecteur X et donc seulement la petite proba des liens va influencer la convergence
@@ -135,39 +139,10 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
         if(vecteur_n1_modif[temp] != -1)
         {
             //Si le sommet supprimé est B et on a A qui pointe sur B --> On verifie que le sommet A n'a pas que ce lien "si c'est le cas alors vecteurFT_Modif[A] = 1";
-            for(y=0;y<size_moins; y++)
-            {
-                cpt=0;
-                if((matrice_H_Modif[2][y] == temp)&& (vecteur_n1_modif[y] != -1))
-                {
-                    cpt++;
-
-                }
-            }
-            if(cpt==0)
-            {
-                t = (int)matrice_H_Modif[1][y];
-                if(vecteur_n1_modif[t] != -1)
-                {
-                    vecteur_FT_Modif[t] = 1;
-                }
-
-            }
-            cpt=0;
-            //printf("TEMP = %d \n",temp);
             sommeProbaSommetDisparu = sommeProbaSommetDisparu + vecteur_n1_modif[temp];
             vecteur_n1_modif[temp] = -1;
             vecteur_FT_Modif[temp] = -1; // On notifi dans le vecteur que le sommet a etait supp
             // On supprime tout les liens qui ont temp comme source ou destination
-            for(j=0; j<nblienTotalApresModif; j++)
-            {
-                if((matrice_H_Modif[1][j] == temp) ||(matrice_H_Modif[2][j] == temp))
-                {
-                    matrice_H_Modif[0][j] = -1;
-                    matrice_H_Modif[1][j] = -1;
-                    matrice_H_Modif[2][j] = -1;
-                }
-            }
             //printf("I = %d\n",i);
             //printf("Sommet supp = %d\n", temp);
             //sommetSupp[i] = temp; // on stock tout les sommets supprimer dans un tableau
@@ -194,30 +169,11 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
     }
     printf("TEMP DOUBLE = %lf \n",tempDouble);*/
     // Modification stucture de donnée et donc MODIFICATION DU GRAPHE DU WEB
-    // En d'autres terme on supprime des liens des les sommets qui ont disparu (On supprime le lien si ce lien la pointe sur un sommet disparu, ou si ce lien la a pour sommet de depart un lien disparu)
-    /*for(i=1; i<size_moins; i++)
-    {
-        if(vecteur_n1_modif[i] < 0)
-        {
-            for(j=0; j<nblienTotalApresModif; j++)
-            {
-                if((matrice_H_Modif[1][j] == i) ||(matrice_H_Modif[2][j] == i))
-                {
-                    matrice_H_Modif[0][j] = -1;
-                    matrice_H_Modif[1][j] = -1;
-                    matrice_H_Modif[2][j] = -1;
-                }
-            }
-        }
-        printf("i = %d\n",i);
-    }*/
     //Modification du graphe du web en donnant au lien une proba de 1/nombreLienDusommetSource
     //J'ajoute des liens de n'importe quel sommets vers n'importe quel sommets (nouveau ou ancien mais l'essentiel qu'il soit pas supp)
     i=nblienTotal;
     cpt=0;
-    printf("SizeMoins = %d\n",size_moins);
-    printf("nombreLiensAjoute = %d\n",nombreLiensAjoute);
-    /*while(i<nblienTotalApresModif)
+    while(i<nblienTotalApresModif)
     {
         cpt=0;
         temp = randNumber(1,sizeApresModif); // ligne
@@ -254,10 +210,28 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
             }
             i++;
         }
-    }*/
+    }
+        // En d'autres terme on supprime des liens des les sommets qui ont disparu (On supprime le lien si ce lien la pointe sur un sommet disparu, ou si ce lien la a pour sommet de depart un lien disparu)
+    for(i=1; i<size_moins; i++)
+    {
+        if(vecteur_n1_modif[i] < 0)
+        {
+            for(j=0; j<nblienTotalApresModif; j++)
+            {
+                if((matrice_H_Modif[1][j] == i) ||(matrice_H_Modif[2][j] == i))
+                {
+                    matrice_H_Modif[0][j] = -1;
+                    matrice_H_Modif[1][j] = -1;
+                    matrice_H_Modif[2][j] = -1;
+                }
+            }
+        }
+        //printf("i = %d\n",i);
+    }
+    printf("somme vecteur supp = %lf\n", sommeProbaSommetDisparu);
     /*for(i=0;i<sizeApresModif;i++)
     {
-        printf("VecteurFT_Modif[%d] = %d\n", i, vecteur_FT_Modif[i]);
+        printf("VecteurFT_Modif[%d] = %lf\n", i, vecteur_n1_modif[i]);
     }*/
     /*for(i=0; i<nblienTotalApresModif; i++ )
     {
@@ -445,27 +419,29 @@ void verifConvergence()
 }
 void verifConvergenceAddSuppSommet()
 {
+
     /*for(i=0; i<nblienTotalApresModif; i++ )
     {
         printf("MatriceModfi[1][%d] = %lf || MatriceModfi[2][%d] = %lf || MatriceModfi[0][%d] = %lf\n",i,matrice_H_Modif[1][i],i,matrice_H_Modif[2][i],i,matrice_H_Modif[0][i]);
     }*/
-    /*cpt=0;
-    for(i=0;i<sizeApresModif;i++)
+    cpt=0;
+    /*for(i=0;i<sizeApresModif;i++)
     {
         if(vecteur_n1_modif[i]<0)
         {
             cpt++;
         }
         printf("vecteur_n1_Modif[%d] = %lf\t vecteur_FT_Modif[%d] = %d\n",i,vecteur_n1_modif[i],i,vecteur_FT_Modif[i]);
-    }
-    printf("CPT = %d\n",cpt);*/
-    printf("ICI\n");
+    }*/
+
+    printf("CPT = %d\n",cpt);
     for(i=0;i<sizeApresModif;i++)
     {
         if(vecteur_n1_modif[i]<0)
         {
             vecteur_n2_modif[i] = -1;
         }
+
     }
     /*for(i=0;i<sizeApresModif;i++)
     {
@@ -479,6 +455,7 @@ void verifConvergenceAddSuppSommet()
     somme = 0.0;
     verif = 0;
     sommevec = 0;
+
     while(verif == 0)
     {
         for(j=0;j<nblienTotalApresModif;j++)
@@ -512,7 +489,7 @@ void verifConvergenceAddSuppSommet()
                     vecteur_n2_modif[col+temp2] = (vecteur_n2_modif[col+temp2] + (matrice_H_Modif[0][j] * vecteur_n1_modif[ligne+temp]));
                 }
                 //printf("vecteur_n2_modif[%d] --> %0.10lf = (%0.10lf + (%0.10lf * %0.10lf))\n",col+temp2, vecteur_n2_modif[col+temp2] = (vecteur_n2_modif[col+temp2] + (matrice_H_Modif[0][j] * vecteur_n1_modif[ligne+temp])),vecteur_n2_modif[col+temp2] , matrice_H_Modif[0][j] , vecteur_n1_modif[ligne+temp]);
-                //vecteur_n2_modif[col+temp2] = (vecteur_n2_modif[col+temp2] + (matrice_H_Modif[0][j] * vecteur_n1_modif[ligne+temp]));
+                vecteur_n2_modif[col+temp2] = (vecteur_n2_modif[col+temp2] + (matrice_H_Modif[0][j] * vecteur_n1_modif[ligne+temp]));
 
             }
         /*for(i=0;i<size_moins;i++)
@@ -558,9 +535,9 @@ void verifConvergenceAddSuppSommet()
             sommevec = sommevec + somme;
             //printf("Somme = %0.10lf\n", somme);
         }
-        //printf("SOMME VEC = %0.11lf \n",sommevec);
-    }
 
+    }
+ printf("SOMME VEC = %0.11lf \n",sommevec);
     if(sommevec<pow(10,-9))
     {
         verif = 1;
