@@ -4,40 +4,44 @@
 #include <math.h>
 #define tailleMax 37000
 #define sommetSuppSizeMax 200
-int  sommetSupp[sommetSuppSizeMax],sommetSuppSize=0,temp,temp2,S,R,i=0,j=0,cpt,size,cptNbLien=0,y, size_moins,sizeApresModif,nblienTotal,nblienTotalApresModif, nbLien,nbLienFinal, nbColonne=0, colonneNotProba=5,indice=0, *listeLigne = NULL, *listeLigne_Modif = NULL; //Si colonneNotProba = 1 --> c'est une colonne sinon c'est une proba
-int *vecteur_FT, *vecteur_FT_Modif;
+#include <time.h>
+long  sommetSupp[sommetSuppSizeMax],sommetSuppSize=0,S,R,j=0,cpt,size,cptNbLien=0,y, size_moins,sizeApresModif,nblienTotal,nblienTotalApresModif, nbLien,nbLienFinal, nbColonne=0, colonneNotProba=5,indice=0, *listeLigne = NULL, *listeLigne_Modif = NULL; //Si colonneNotProba = 1 --> c'est une colonne sinon c'est une proba
+long *vecteur_FT, *vecteur_FT_Modif, maximum;
+long i=0, temp,temp2;
 char  *caractere;
 double somme=0.0,proba, alpha = 0.85, *vecteur_n1, *vecteur_n2, *vecteur_n1_modif,*vecteur_n2_modif, sommeProbaSommetDisparu,tempDouble;
 double **matrice_H = NULL, **matrice_H_Modif = NULL;
-int verif = 0, iteration=0, t,tt;
+long verif = 0, iteration=0, t,tt;
 double sommevec=0.0;
 FILE* fichier=NULL;
 char sentence[100000] ;
 char *secondword, *word;
-int col=0,ligne=0;
+long col=0,ligne=0;
 int main()
 {
     //Stanford || wb-cs-stanford || in-2004v2 || wikipedia-20051105V2 || wb-edu --> OK
     //Stanford_BerkeleyV2 || --> NON
+    srand(time(NULL));
     word = strtok(sentence," ");
     cpt=0;
     char chaine[tailleMax] = "";
-    fichier = fopen("in-2004v2.txt","r");
+    fichier = fopen("Stanford.txt","r");
     fgets(chaine, tailleMax, fichier); // recup taille
-    size = 1 + (int)atof(chaine);
+    size = 1 + (long)atof(chaine);
     size_moins = size - 1;
     fgets(chaine, tailleMax, fichier); // recup nblien
-    nblienTotal = (int)atof(chaine);
+    nblienTotal = (long)atof(chaine);
     lectureMatrice();
     initDebutVecteurN1N2();
     verifConvergence();
+
     // DEBUT PROJET
     //printf("ff %lf %lf %lf\nsize moins = %d \n", matrice_H[1][0],matrice_H[2][0],matrice_H[0][0],size_moins);
     // Initialisation du tableau des sommets supprimé a -1 partout
-    for(i=0;i<sommetSuppSizeMax;i++)
+    /*for(i=0;i<sommetSuppSizeMax;i++)
     {
         sommetSupp[i] = -1;
-    }
+    }*/
     //ALGO 1
     /*algoAddAndSuppSommet(3,5); // puisque les nouveau sommets ne pointent pas sur des pages 'proba 0 donc multiplication deja a nulle' donc le nombre d'iteration varie en fonction du nombre de sommets supprimer si on supprime un petit nombre il devra recalculer beaucoup pour converger et plus on supprime plus il met moins de temps a converger
     for(i=0;i<sommetSuppSizeMax;i++)
@@ -64,7 +68,7 @@ int main()
         printf("Vecteur[%d] = %lf - %lf\n",i,vecteur_n2[i],vecteur_n1[i]);
     }*/
     // Remarque 5 : Si on supprime tout les sommets et on cherche a rajouter des liens on est obligé d'ajouter de nouveau sommets car sinon BUG (le lien d'autra pas de source ni de cible)
-    algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(138300,0,0);
+    algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(5,0,0);
     //Plus on supprime de lien plus ça converge vite "Qlq soit le nombre de sommet ou de liens ajouter car la priorité est l'initialisation du vecteur <Formule enoncé>"
     //Aprés si on ajoute des liens seulement --> plus on ajoute de lien plus il converge plus vite car les proba serons encore plus petite --> multiplication sera plus petite
     //Quand on supprime pas de sommet le nombre de sommets ajouter ne va pas vraiment influencer la convergence car les nouveau sommet auront une valeur de 0 dans le vecteur X et donc seulement la petite proba des liens va influencer la convergence
@@ -73,17 +77,20 @@ int main()
     //verifConvergence();
     return 0;
 }
-
-int randNumber(int min, int max)
+long ultra_rand() {
+    long t = (rand()) + (RAND_MAX)*(rand());
+    return t;
+}
+long randNumber(long min, long max)
 {
-    int distance ,anyRandom,x;
+    long distance ,anyRandom,x;
     distance = max - min  +1;
-    anyRandom = rand();
+    anyRandom = ultra_rand();
     x = anyRandom % distance;
     return(x+min);
 }
 
-void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp, int nombreSommetAjoute, int nombreLiensAjoute)
+void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(long nombreSommetSupp, long nombreSommetAjoute, long nombreLiensAjoute)
 {
     //On ajoute des liens pour les nouveau sommets et on modifie pas les lien de l'ancien graphe (mais on peut changer leurs valeur ca depend des nouveau lien --> car on remmet la somme de la ligne a 1) on supp suelement les liens des sommets disparu (lien depuis le sommet disparu ou bien vers le sommet disparu)
     // On change le vecteur x
@@ -113,7 +120,7 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
     sizeApresModif = size_moins + nombreSommetAjoute;
     vecteur_n1_modif = (double *) malloc(sizeof(double)*sizeApresModif);
     vecteur_n2_modif = (double *) malloc(sizeof(double)*sizeApresModif);
-    vecteur_FT_Modif = (int *) malloc(sizeof(int)*sizeApresModif);
+    vecteur_FT_Modif = (long *) malloc(sizeof(long)*sizeApresModif);
     for(i=0; i<size_moins ; i++)
     {
         vecteur_n1_modif[i] = vecteur_n1[i];
@@ -134,12 +141,20 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
     // Modification du vecteur et supp des ancien sommets et ajout des nouveau avec init
     // Je decide aleatoirement quels sommets vont etre supprimer
     i=0;
+
     sommeProbaSommetDisparu = 0.0;
+    maximum = 0;
     while(i<R)
     {
         temp = randNumber(1,size_moins)-1;
+        //printf("YOYO\n");
         if(vecteur_n1_modif[temp] != -1)
         {
+            if(temp>maximum)
+            {
+                maximum = temp;
+            }
+           //printf("temp = %d\n",temp);
             //Si le sommet supprimé est B et on a A qui pointe sur B --> On verifie que le sommet A n'a pas que ce lien "si c'est le cas alors vecteurFT_Modif[A] = 1";
             sommeProbaSommetDisparu = sommeProbaSommetDisparu + vecteur_n1_modif[temp];
             vecteur_n1_modif[temp] = -1;
@@ -150,10 +165,12 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
             //printf("Sommet supp = %d\n", temp);
             //sommetSupp[i] = temp; // on stock tout les sommets supprimer dans un tableau
             i++;
+            //printf("i = %d\n", i);
             //printf("Sommet supp  = %d\n", temp);
         }
     }
     t=0;
+    printf("TOTO\n");
     // Init de la proba des nouveau sommets pour le vecteur
     for(j=size_moins; j<sizeApresModif; j++)
     {
@@ -163,7 +180,7 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
     }
 
     //En d'autres terme on supprime des liens des les sommets qui ont disparu (On supprime le lien si ce lien la pointe sur un sommet disparu, ou si ce lien la a pour sommet de depart un lien disparu)
-    for(i=0;i<size_moins;i++)
+    /*for(i=0;i<size_moins;i++)
     {
         if(vecteur_n1_modif[i]<0)
         {
@@ -176,6 +193,20 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
                     matrice_H_Modif[1][j] = -1;
                 }
             }
+        }
+    }*/
+    //supprime des liens des les sommets qui ont disparu OPTIMISE
+    printf("Debut");
+    for(i=0;i<nblienTotalApresModif;i++)
+    {
+        ligne = matrice_H_Modif[1][i] - 1;
+        col = matrice_H_Modif[2][i] - 1;
+        if((vecteur_n1_modif[ligne] < 0) || (vecteur_n1_modif[col] < 0))
+        {
+            matrice_H_Modif[0][i] = -1;
+            matrice_H_Modif[1][i] = -1;
+            matrice_H_Modif[2][i] = -1;
+            //printf("i = %d\n", i);
         }
     }
     i=nblienTotal;
@@ -228,6 +259,8 @@ void algoAddAndSuppSommetAvecLiensProbaUnSurNblienDuSommet(int nombreSommetSupp,
         printf("MatriceModfi[1][%d] = %lf || MatriceModfi[2][%d] = %lf || MatriceModfi[0][%d] = %lf\n",i,matrice_H_Modif[1][i],i,matrice_H_Modif[2][i],i,matrice_H_Modif[0][i]);
     }*/
 
+    printf("Modification du graphe Fini\n");
+    printf("Maximum = %d \n", maximum);
 }
 
 
@@ -244,8 +277,8 @@ void lectureMatrice()
     matrice_H[2] = malloc(nblienTotal * sizeof(double)); //vecteur numero colonne
     vecteur_n1 = (double *) malloc(sizeof(double)*size_moins);
     vecteur_n2 = (double *) malloc(sizeof(double)*size_moins);
-    vecteur_FT = (int *) malloc(sizeof(int)*size_moins);
-    int nbLigne = 0;
+    vecteur_FT = (long *) malloc(sizeof(long)*size_moins);
+    long nbLigne = 0;
     while(fgets(sentence,tailleMax, fichier) != NULL) // parcours fichier ligne par ligne
         {
             do
@@ -283,8 +316,8 @@ void lectureMatrice()
                     {
                     indice++;
                     matrice_H[0][i] = (double)proba;
-                    matrice_H[1][i] = (int)nbLigne;
-                    matrice_H[2][i] = (int)nbColonne;
+                    matrice_H[1][i] = (long)nbLigne;
+                    matrice_H[2][i] = (long)nbColonne;
                     i++; //i represente l'indice de parcout de notre double vecteur
                     }
                 if(cptNbLien == nbLien)
@@ -328,8 +361,8 @@ void verifConvergence()
     {
         for(j=0;j<nblienTotal;j++)
             {
-                ligne = (int)matrice_H[1][j]-1;
-                col = (int)matrice_H[2][j]-1;
+                ligne = (long)matrice_H[1][j]-1;
+                col = (long)matrice_H[2][j]-1;
                 vecteur_n2[col] = (vecteur_n2[col] + (matrice_H[0][j] * vecteur_n1[ligne]));
                 //printf("ligne = %d \t matriceModif[1][j] = %lf\n", ligne, matrice_H[1][j]);
             }
@@ -453,8 +486,8 @@ void verifConvergenceAddSuppSommet()
             {
                 if(matrice_H_Modif[0][j]>=0)
                 {
-                    ligne = (int)matrice_H_Modif[1][j]-1;
-                    col = (int)matrice_H_Modif[2][j]-1;
+                    ligne = (long)matrice_H_Modif[1][j]-1;
+                    col = (long)matrice_H_Modif[2][j]-1;
                     vecteur_n2_modif[col] = (vecteur_n2_modif[col] + (matrice_H_Modif[0][j] * vecteur_n1_modif[ligne]));
                 }
 
