@@ -6,7 +6,7 @@
 #define sommetSuppSizeMax 200
 #include <time.h>
 long  sommetSupp[sommetSuppSizeMax],sommetSuppSize=0,S,R,j=0,cpt,size,cptNbLien=0,y, size_moins,sizeApresModif,nblienTotal,nblienTotalApresModif, nbLien,nbLienFinal, nbColonne=0, colonneNotProba=5,indice=0, *listeLigne = NULL, *listeLigne_Modif = NULL; //Si colonneNotProba = 1 --> c'est une colonne sinon c'est une proba
-long *vecteur_FT, *vecteur_FT_Modif, maximum;
+long *vecteur_FT, **vecteur_FT_Modif = NULL, maximum;
 long i=0, temp,temp2;
 char  *caractere;
 double somme=0.0,proba, alpha = 0.85, *vecteur_n1, *vecteur_n2, *vecteur_n1_modif,*vecteur_n2_modif, sommeProbaSommetDisparu,tempDouble;
@@ -80,7 +80,7 @@ int main()
         printf("Vecteur[%d] = %lf - %lf\n",i,vecteur_n2[i],vecteur_n1[i]);
     }*/
     // Remarque 5 : Si on supprime tout les sommets et on cherche a rajouter des liens on est obligé d'ajouter de nouveau sommets car sinon BUG (le lien d'autra pas de source ni de cible)
-    ModificationGraphe(2819,2819,231250);
+    ModificationGraphe(28190,28190,2312500);
     //Plus on supprime de lien plus ça converge vite "Qlq soit le nombre de sommet ou de liens ajouter car la priorité est l'initialisation du vecteur <Formule enoncé>"
     //Aprés si on ajoute des liens seulement --> plus on ajoute de lien plus il converge plus vite car les proba serons encore plus petite --> multiplication sera plus petite
     //Quand on supprime pas de sommet le nombre de sommets ajouter ne va pas vraiment influencer la convergence car les nouveau sommet auront une valeur de 0 dans le vecteur X et donc seulement la petite proba des liens va influencer la convergence
@@ -144,13 +144,18 @@ void ModificationGraphe(long nombreSommetSupp, long nombreSommetAjoute, long nom
     sizeApresModif = size_moins + nombreSommetAjoute;
     vecteur_n1_modif = (double *) malloc(sizeof(double)*sizeApresModif);
     vecteur_n2_modif = (double *) malloc(sizeof(double)*sizeApresModif);
-    vecteur_FT_Modif = (long *) malloc(sizeof(long)*sizeApresModif);
+    //printf("Ouii\n");
+    vecteur_FT_Modif = (long *) malloc(sizeof(long*)*sizeApresModif);
+    vecteur_FT_Modif[0] = (long *) malloc(sizeof(long)*sizeApresModif);
+    vecteur_FT_Modif[1] = (long *) malloc(sizeof(long)*sizeApresModif);
+    //printf("Ouii\n");
    // printf("PING 3\n");
     for(i=0; i<size_moins ; i++)
     {
         vecteur_n1_modif[i] = vecteur_n1[i];
         vecteur_n2_modif[i] = vecteur_n2[i];
-        vecteur_FT_Modif[i] = vecteur_FT[i];
+        vecteur_FT_Modif[0][i] = vecteur_FT[i];
+        vecteur_FT_Modif[1][i] = 0;
     }
     //printf("PING 4\n");
     //printf("size = %d\n", size);
@@ -162,8 +167,10 @@ void ModificationGraphe(long nombreSommetSupp, long nombreSommetAjoute, long nom
         //ici modif aprés
         vecteur_n1_modif[j] = 0.0;
         vecteur_n2_modif[j] = 0.0;
-        vecteur_FT_Modif[j] = 1;
+        vecteur_FT_Modif[0][j] = 1;
+        vecteur_FT_Modif[1][j] = 0;
     }
+    //printf("Ouii\n");
     //printf("PING 5\n");
     // Modification du vecteur et supp des ancien sommets et ajout des nouveau avec init
     // Je decide aleatoirement quels sommets vont etre supprimer
@@ -186,7 +193,7 @@ void ModificationGraphe(long nombreSommetSupp, long nombreSommetAjoute, long nom
             sommeProbaSommetDisparu = sommeProbaSommetDisparu + vecteur_n1_modif[temp];
             vecteur_n1_modif[temp] = -1;
             vecteur_n2_modif[temp] = -1;
-            vecteur_FT_Modif[temp] = -1; // On notifi dans le vecteur que le sommet a etait supp
+            vecteur_FT_Modif[0][temp] = -1; // On notifi dans le vecteur que le sommet a etait supp
             // On supprime tout les liens qui ont temp comme source ou destination
             //printf("I = %d\n",i);
             //printf("Sommet supp = %d\n", temp);
@@ -196,6 +203,7 @@ void ModificationGraphe(long nombreSommetSupp, long nombreSommetAjoute, long nom
             //printf("Sommet supp  = %d\n", temp);
         }
     }
+    //printf("Ouii\n");
     t=0;
     //printf("TOTO\n");
     // Init de la proba des nouveau sommets pour le vecteur
@@ -235,8 +243,17 @@ void ModificationGraphe(long nombreSommetSupp, long nombreSommetAjoute, long nom
             matrice_H_Modif[2][i] = -1;
             //printf("i = %d\n", i);
         }
+        else if((vecteur_n1_modif[ligne] >= 0) && (vecteur_n1_modif[col] >= 0))
+        {
+            vecteur_FT_Modif[1][ligne] = vecteur_FT_Modif[1][ligne] + 1; //On compte le nombre de lien ayant comme source ce sommet
+        }
     }
+    /*for(i=0;i<sizeApresModif;i++)
+    {
+        printf("vecteur_FT_modif[1][%d] = %d\n", i, vecteur_FT_Modif[1][i]);
+    }*/
     i=nblienTotal;
+    //printf("Ouii\n");
     cpt=0;
     while(i<nblienTotalApresModif)
     {
@@ -244,38 +261,50 @@ void ModificationGraphe(long nombreSommetSupp, long nombreSommetAjoute, long nom
         temp2 = randNumber(1,sizeApresModif)-1;
         if((vecteur_n1_modif[temp] != -1) && (vecteur_n1_modif[temp2] != -1))
         {
-            vecteur_FT_Modif[temp] = 0;
+            vecteur_FT_Modif[0][temp] = 0;
             //printf("temp1 = %d \t temp2= %d\n",temp,temp2);
             cpt=0;
-            for(j=0;j<nblienTotalApresModif;j++)
+            //printf("Ouii\n");
+            /*for(j=0;j<nblienTotalApresModif;j++)
             {
                 if((matrice_H_Modif[1][j] == temp))
                 {
                     cpt++;
                 }
-            }
-            for(j=0;j<nblienTotalApresModif;j++)
+            }*/
+            /*for(j=0;j<nblienTotalApresModif;j++)
             {
                 if(matrice_H_Modif[1][j] == temp)
                 {
-                    tempDouble = (double)matrice_H_Modif[0][j]/cpt;
+                    tempDouble = (double)matrice_H_Modif[0][j]/vecteur_FT_Modif[1][temp];
                     matrice_H_Modif[0][j] =(double) matrice_H_Modif[0][j]-tempDouble;
                 }
-            }
+            }*/
+            matrice_H_Modif[0][i] = matrice_H_Modif[0][i] + 1;
             matrice_H_Modif[1][i] = temp;
             matrice_H_Modif[2][i] = temp2;
-            if(cpt != 0)
+            /*if(vecteur_FT_Modif[1][temp] != 0)
             {
-                matrice_H_Modif[0][i] = (double)1/cpt;
+                matrice_H_Modif[0][i] = (double)1/vecteur_FT_Modif[1][temp];
             }
             else
             {
                 matrice_H_Modif[0][i] = 1;
-            }
+            }*/
+            vecteur_FT_Modif[1][temp] = vecteur_FT_Modif[1][temp] + 1;
             cpt=0;
             i++;
         }
     }
+    i=nblienTotal;
+    while(i<nblienTotalApresModif)
+    {
+        temp = matrice_H_Modif[1][i];
+        cpt = vecteur_FT_Modif[1][temp];
+        matrice_H_Modif[0][i] = matrice_H_Modif[0][i]/cpt;
+        i++;
+    }
+    //printf("Ouii\n");
     // FAUT VERIFIER PENDANT LA MULTI DE LA CONVERGENCE QUE matrice_modif[0][i] != 0; car y'a des elements nul ici ;
     /*for(i=0; i<sizeApresModif; i++ )
     {
@@ -537,7 +566,7 @@ void verifConvergenceAddSuppSommet()
         // On Calcul BETA
         for(i=0;i<sizeApresModif; i++)
         {
-            if(vecteur_FT_Modif[i] == 1)
+            if(vecteur_FT_Modif[0][i] == 1)
             {
                 somme = somme + vecteur_n1_modif[i];
             }
